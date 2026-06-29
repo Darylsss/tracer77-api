@@ -6,9 +6,30 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
 {
+    #[OA\Post(
+        path: "/api/register",
+        summary: "Inscription d'un nouvel utilisateur",
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["nom", "email", "password", "password_confirmation"],
+                properties: [
+                    new OA\Property(property: "nom", type: "string", example: "Daryl"),
+                    new OA\Property(property: "email", type: "string", example: "daryl@example.com"),
+                    new OA\Property(property: "password", type: "string", example: "123456"),
+                    new OA\Property(property: "password_confirmation", type: "string", example: "123456"),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: "Inscription réussie"),
+            new OA\Response(response: 422, description: "Erreur de validation"),
+        ]
+    )]
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -38,6 +59,25 @@ class AuthController extends Controller
             'user'    => $user,
         ], 201);
     }
+
+   #[OA\Post(
+        path: "/api/login",
+        summary: "Connexion d'un utilisateur",
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["email", "password"],
+                properties: [
+                    new OA\Property(property: "email", type: "string", example: "daryl@example.com"),
+                    new OA\Property(property: "password", type: "string", example: "123456"),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: "Connexion réussie"),
+            new OA\Response(response: 401, description: "Email ou mot de passe incorrect"),
+        ]
+    )]
 
     public function login(Request $request)
     {
@@ -70,6 +110,16 @@ class AuthController extends Controller
             'user'    => $user,
         ]);
     }
+
+    #[OA\Post(
+        path: "/api/logout",
+        summary: "Déconnexion de l'utilisateur",
+        security: [["sanctum" => []]],
+        responses: [
+            new OA\Response(response: 200, description: "Déconnexion réussie"),
+        ]
+    )]
+
 
     public function logout(Request $request)
     {
