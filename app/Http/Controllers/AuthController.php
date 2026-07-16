@@ -130,4 +130,137 @@ class AuthController extends Controller
             'message' => 'Déconnecté.',
         ]);
     }
+
+    // Récupérer l'user connecté
+#[OA\Get(
+    path: "/api/user",
+    summary: "Récupérer l'utilisateur connecté",
+    security: [["sanctum" => []]],
+    responses: [
+        new OA\Response(response: 200, description: "Utilisateur retourné"),
+        new OA\Response(response: 401, description: "Non authentifié"),
+    ]
+)]
+
+public function me(Request $request)
+{
+    return response()->json($request->user());
+}
+
+
+// Modifier le nom
+#[OA\Put(
+    path: "/api/user/update-name",
+    summary: "Modifier le nom",
+    security: [["sanctum" => []]],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ["nom"],
+            properties: [
+                new OA\Property(property: "nom", type: "string", example: "Daryl"),
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(response: 200, description: "Nom mis à jour"),
+        new OA\Response(response: 422, description: "Erreur de validation"),
+    ]
+)]
+
+public function updateName(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'nom' => 'required|string|max:255',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    $request->user()->update(['nom' => $request->nom]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Nom mis à jour.',
+        'user' => $request->user(),
+    ]);
+}
+
+// Modifier le mot de passe
+#[OA\Put(
+    path: "/api/user/update-password",
+    summary: "Modifier le mot de passe",
+    security: [["sanctum" => []]],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ["current_password", "new_password", "new_password_confirmation"],
+            properties: [
+                new OA\Property(property: "current_password", type: "string", example: "123456"),
+                new OA\Property(property: "new_password", type: "string", example: "nouveau123"),
+                new OA\Property(property: "new_password_confirmation", type: "string", example: "nouveau123"),
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(response: 200, description: "Mot de passe mis à jour"),
+        new OA\Response(response: 401, description: "Mot de passe actuel incorrect"),
+    ]
+)]
+
+public function updatePassword(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'current_password' => 'required|string',
+        'new_password'     => 'required|string|min:6|confirmed',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    if (!Hash::check($request->current_password, $request->user()->password)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Mot de passe actuel incorrect.',
+        ], 401);
+    }
+
+    $request->user()->update([
+        'password' => Hash::make($request->new_password),
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Mot de passe mis à jour.',
+    ]);
+}
+
+// Supprimer le compte
+#[OA\Delete(
+    path: "/api/user/delete",
+    summary: "Supprimer le compte",
+    security: [["sanctum" => []]],
+    responses: [
+        new OA\Response(response: 200, description: "Compte supprimé"),
+    ]
+)]
+
+public function deleteAccount(Request $request)
+{
+    $request->user()->currentAccessToken()->delete();
+    $request->user()->delete();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Compte supprimé.',
+    ]);
+}
 }

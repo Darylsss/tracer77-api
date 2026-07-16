@@ -11,8 +11,16 @@ use OpenApi\Attributes as OA;
     description: "API d'authentification et de géolocalisation pour Tracer77"
 )]
 #[OA\Server(
-    url: "http://192.168.1.153:8000",
+    url: "http://192.168.1.103:8000",
     description: "Serveur local de développement"
+)]
+
+#[OA\SecurityScheme(
+    securityScheme: "sanctum",
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT",
+    description: "Entrez votre token Sanctum ici"
 )]
 class SwaggerInfoController extends Controller
 {

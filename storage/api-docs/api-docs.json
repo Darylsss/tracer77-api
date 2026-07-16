@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://192.168.1.153:8000",
+            "url": "http://192.168.1.103:8000",
             "description": "Serveur local de développement"
         }
     ],
@@ -112,6 +112,137 @@
                         "sanctum": []
                     }
                 ]
+            }
+        },
+        "/api/user": {
+            "get": {
+                "summary": "Récupérer l'utilisateur connecté",
+                "operationId": "e5478e84ace512f8d9653dd7e920ea2a",
+                "responses": {
+                    "200": {
+                        "description": "Utilisateur retourné"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/user/update-name": {
+            "put": {
+                "summary": "Modifier le nom",
+                "operationId": "91eed3a5941cde6e3820e95fc019191e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nom"
+                                ],
+                                "properties": {
+                                    "nom": {
+                                        "type": "string",
+                                        "example": "Daryl"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Nom mis à jour"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/user/update-password": {
+            "put": {
+                "summary": "Modifier le mot de passe",
+                "operationId": "912b71f24278e89f26f6c0bca8e9e730",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "new_password",
+                                    "new_password_confirmation"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "example": "nouveau123"
+                                    },
+                                    "new_password_confirmation": {
+                                        "type": "string",
+                                        "example": "nouveau123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mot de passe mis à jour"
+                    },
+                    "401": {
+                        "description": "Mot de passe actuel incorrect"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/user/delete": {
+            "delete": {
+                "summary": "Supprimer le compte",
+                "operationId": "f087c70fa14255f10a79bd7fd3279964",
+                "responses": {
+                    "200": {
+                        "description": "Compte supprimé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Entrez votre token Sanctum ici",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
             }
         }
     }

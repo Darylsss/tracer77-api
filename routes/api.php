@@ -9,9 +9,10 @@ Route::post('/login',    [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/user',    function (\Illuminate\Http\Request $r) {
-        return $r->user();
-    });
+    Route::get('/user', [AuthController::class, 'me']);
+    Route::put('/user/update-name', [AuthController::class, 'updateName']);
+    Route::put('/user/update-password', [AuthController::class, 'updatePassword']);
+    Route::delete('/user/delete', [AuthController::class, 'deleteAccount']);
 });
 
 // Routes positions boîtier
