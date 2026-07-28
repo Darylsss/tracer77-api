@@ -264,4 +264,3 @@ public function deleteAccount(Request $request)
     ]);
 }
 }
-
