@@ -81,7 +81,7 @@ return [
             /*
              * Absolute path to location where parsed annotations will be stored
              */
-           'docs' => public_path('docs'),
+            'docs' => storage_path('api-docs'),,
 
             /*
              * Absolute path to directory where to export views
@@ -252,7 +252,7 @@ return [
          * Set this to `true` in development mode so that docs would be regenerated on each request
          * Set this to `false` to disable swagger generation on production
          */
-     'generate_always' => true,
+        'generate_always' => env('L5_SWAGGER_GENERATE_ALWAYS', false),
 
         /*
          * Set this to `true` to generate a copy of documentation in yaml format
