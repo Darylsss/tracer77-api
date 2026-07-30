@@ -114,12 +114,11 @@ class AuthController extends Controller
     #[OA\Post(
         path: "/api/logout",
         summary: "Déconnexion de l'utilisateur",
-        security: [["sanctum" => {}]],
+        security: [["sanctum" => []]],
         responses: [
-            new OA\Response(response: 200, description: "Déconnexion réussie"),
+            new OA\Response(response: 200, description: "Déconnexion réussie")
         ]
     )]
-
 
     public function logout(Request $request)
     {
