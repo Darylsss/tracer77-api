@@ -13,26 +13,26 @@ class PositionController extends Controller
     {
         // Valider les données reçues du boîtier
         $request->validate([
-            'lat'        => 'required|numeric',
-            'lng'        => 'required|numeric',
-            'vitesse'    => 'required|numeric',
-            'direction'  => 'required|numeric',
-            'satellites' => 'required|integer',
-            'batterie'   => 'required|numeric',
-            'sos'        => 'required|integer',
-        ]);
+    'device_id'  => 'required|string',
+    'latitude'   => 'required|numeric',
+    'longitude'  => 'required|numeric',
+    'vitesse'    => 'required|numeric',
+    'direction'  => 'required|numeric',
+    'satellites' => 'required|integer',
+    'batterie'   => 'required|numeric',
+    'sos'        => 'required|integer',
+]);
 
-        // Sauvegarder la position en base de données
-        $position = Position::create([
-            'lat'        => $request->lat,
-            'lng'        => $request->lng,
-            'vitesse'    => $request->vitesse,
-            'direction'  => $request->direction,
-            'satellites' => $request->satellites,
-            'batterie'   => $request->batterie,
-            'sos'        => $request->sos,
-            'created_at' => now(),
-        ]);
+$position = Position::create([
+    'device_id'  => $request->device_id,
+    'lat'        => $request->latitude,
+    'lng'        => $request->longitude,
+    'vitesse'    => $request->vitesse,
+    'direction'  => $request->direction,
+    'satellites' => $request->satellites,
+    'batterie'   => $request->batterie,
+    'sos'        => $request->sos,
+]);
 
         // Si SOS déclenché → alerter immédiatement
         if ($request->sos == 1) {
