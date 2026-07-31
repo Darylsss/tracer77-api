@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://192.168.1.103:8000",
+            "url": "http://192.168.1.77:8000/",
             "description": "Serveur local de développement"
         }
     ],
@@ -233,6 +233,432 @@
                         "sanctum": []
                     }
                 ]
+            }
+        },
+        "/api/forgot-password": {
+            "post": {
+                "summary": "Demander un code de réinitialisation",
+                "operationId": "7af8817e88ba5874543ff38f188248f1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "daryl@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Code envoyé si l'email existe"
+                    }
+                }
+            }
+        },
+        "/api/reset-password": {
+            "post": {
+                "summary": "Réinitialiser le mot de passe avec le code reçu",
+                "operationId": "00c0aad74830221c6da409a1355ec736",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "token",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "daryl@example.com"
+                                    },
+                                    "token": {
+                                        "type": "string",
+                                        "example": "le_code_recu_par_email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "nouveaupass123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "nouveaupass123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mot de passe réinitialisé"
+                    },
+                    "422": {
+                        "description": "Code invalide ou expiré"
+                    }
+                }
+            }
+        },
+        "/api/enfants": {
+            "post": {
+                "summary": "Ajouter un enfant à tracker",
+                "operationId": "a8e0b797d1124355954194a536de9069",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nom",
+                                    "prenom",
+                                    "identifiant_boitier"
+                                ],
+                                "properties": {
+                                    "nom": {
+                                        "type": "string",
+                                        "example": "Doe"
+                                    },
+                                    "prenom": {
+                                        "type": "string",
+                                        "example": "Timmy"
+                                    },
+                                    "identifiant_boitier": {
+                                        "type": "string",
+                                        "example": "TRC-0042"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Enfant ajouté"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/family/create": {
+            "post": {
+                "summary": "Créer un espace famille",
+                "operationId": "ea3c1b20b11ed4ad760837f264931089",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nom": {
+                                        "type": "string",
+                                        "example": "Famille Dupont"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Famille créée"
+                    },
+                    "409": {
+                        "description": "Appartient déjà à une famille"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/family/invite": {
+            "post": {
+                "summary": "Inviter un membre dans l'espace famille",
+                "operationId": "d88e4622fd487e91f5b28518bcdb90b6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "membre-test@exemple.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Invitation envoyée"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/family/accept-invite": {
+            "post": {
+                "summary": "Accepter une invitation à rejoindre une famille",
+                "operationId": "84f18b08d70a49ba99f3955f4da75a51",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "token"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "type": "string",
+                                        "example": "le_token_recu_par_email"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Invitation acceptée"
+                    },
+                    "404": {
+                        "description": "Invitation invalide"
+                    },
+                    "410": {
+                        "description": "Invitation expirée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/family/members": {
+            "get": {
+                "summary": "Lister les membres et enfants de la famille",
+                "operationId": "35ea2781ff2c6cbcf7cce7c7ca2806e8",
+                "responses": {
+                    "200": {
+                        "description": "Liste retournée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/family/members/{id}": {
+            "delete": {
+                "summary": "Retirer un membre de la famille",
+                "operationId": "e2094d61d52052501af0800d787b293b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Membre retiré"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    },
+                    "404": {
+                        "description": "Membre introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/user/toggle-position-sharing": {
+            "post": {
+                "summary": "Activer/désactiver le partage de sa position",
+                "operationId": "40d6d003810978f478766a4856bb94c9",
+                "responses": {
+                    "200": {
+                        "description": "Préférence mise à jour"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/positions": {
+            "post": {
+                "summary": "Envoyer sa position (membre connecté)",
+                "operationId": "366ecfe76f754ccef928c78d1afadecb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "lat",
+                                    "lng"
+                                ],
+                                "properties": {
+                                    "lat": {
+                                        "type": "number",
+                                        "example": 6.3654
+                                    },
+                                    "lng": {
+                                        "type": "number",
+                                        "example": 2.4183
+                                    },
+                                    "vitesse": {
+                                        "type": "number",
+                                        "example": 0
+                                    },
+                                    "direction": {
+                                        "type": "number",
+                                        "example": 0
+                                    },
+                                    "satellites": {
+                                        "type": "integer",
+                                        "example": 0
+                                    },
+                                    "batterie": {
+                                        "type": "number",
+                                        "example": 85
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Position enregistrée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/devices/positions": {
+            "post": {
+                "summary": "Envoyer une position depuis un boîtier ESP32",
+                "operationId": "226e3ca295feae06c16cd03cca7c8b00",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "identifiant_boitier",
+                                    "lat",
+                                    "lng"
+                                ],
+                                "properties": {
+                                    "identifiant_boitier": {
+                                        "type": "string",
+                                        "example": "TRC-0042"
+                                    },
+                                    "lat": {
+                                        "type": "number",
+                                        "example": 6.3654
+                                    },
+                                    "lng": {
+                                        "type": "number",
+                                        "example": 2.4183
+                                    },
+                                    "vitesse": {
+                                        "type": "number",
+                                        "example": 0
+                                    },
+                                    "direction": {
+                                        "type": "number",
+                                        "example": 0
+                                    },
+                                    "satellites": {
+                                        "type": "integer",
+                                        "example": 4
+                                    },
+                                    "batterie": {
+                                        "type": "number",
+                                        "example": 72
+                                    },
+                                    "sos": {
+                                        "type": "integer",
+                                        "example": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Position enregistrée"
+                    },
+                    "404": {
+                        "description": "Boîtier inconnu"
+                    }
+                }
             }
         }
     },

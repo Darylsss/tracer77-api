@@ -6,21 +6,27 @@ use Illuminate\Database\Eloquent\Model;
 
 class Enfant extends Model
 {
-    protected $fillable = [
-        'user_id',
-        'nom',
-        'prenom',
-        'photo',
-        'identifiant_boitier',
-    ];
+    protected $fillable = ['user_id', 'family_id', 'nom', 'prenom', 'photo', 'identifiant_boitier'];
 
-    public function user()
+    public function family()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Family::class);
     }
 
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // Toutes les positions de cet enfant
     public function positions()
     {
-        return $this->hasMany(Position::class);
+        return $this->morphMany(Position::class, 'trackable');
+    }
+
+    // Sa position la plus récente uniquement
+    public function lastPosition()
+    {
+        return $this->morphOne(Position::class, 'trackable')->latestOfMany();
     }
 }

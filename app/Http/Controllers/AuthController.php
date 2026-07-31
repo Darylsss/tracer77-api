@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
+use App\Models\Family;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -50,6 +53,8 @@ class AuthController extends Controller
             'email'    => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        
 
         $token = $user->createToken('tracer77')->plainTextToken;
 
@@ -116,9 +121,10 @@ class AuthController extends Controller
         summary: "Déconnexion de l'utilisateur",
         security: [["sanctum" => []]],
         responses: [
-            new OA\Response(response: 200, description: "Déconnexion réussie")
+            new OA\Response(response: 200, description: "Déconnexion réussie"),
         ]
     )]
+
 
     public function logout(Request $request)
     {
@@ -143,9 +149,11 @@ class AuthController extends Controller
 
 public function me(Request $request)
 {
-    return response()->json($request->user());
+    $user = $request->user();
+    $data = $user->toArray();
+    $data['role'] = $user->getRoleNames()->first();
+    return response()->json($data);
 }
-
 
 // Modifier le nom
 #[OA\Put(
@@ -261,5 +269,101 @@ public function deleteAccount(Request $request)
         'success' => true,
         'message' => 'Compte supprimé.',
     ]);
+}
+
+#[OA\Post(
+    path: "/api/forgot-password",
+    summary: "Demander un code de réinitialisation",
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ["email"],
+            properties: [new OA\Property(property: "email", type: "string", example: "daryl@example.com")]
+        )
+    ),
+    responses: [new OA\Response(response: 200, description: "Code envoyé si l'email existe")]
+)]
+public function forgotPassword(Request $request)
+{
+    $validator = Validator::make($request->all(), ['email' => 'required|email']);
+
+    if ($validator->fails()) {
+        return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+    }
+
+    $user = User::where('email', $request->email)->first();
+
+    if ($user) {
+        $code = (string) random_int(100000, 999999); // code à 6 chiffres
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            ['token' => Hash::make($code), 'created_at' => now()]
+        );
+
+        Mail::raw(
+            "Vous avez demandé à réinitialiser votre mot de passe sur Tracer77.\n\n"
+            . "Voici votre code : {$code}\n\n"
+            . "Ce code est valable 15 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.",
+            function ($message) use ($request) {
+                $message->to($request->email)->subject('Code de réinitialisation - Tracer77');
+            }
+        );
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Si cet email existe, un code a été envoyé.',
+    ]);
+}
+
+#[OA\Post(
+    path: "/api/reset-password",
+    summary: "Réinitialiser le mot de passe avec le code reçu",
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ["email", "token", "password", "password_confirmation"],
+            properties: [
+                new OA\Property(property: "email", type: "string", example: "daryl@example.com"),
+                new OA\Property(property: "token", type: "string", example: "le_code_recu_par_email"),
+                new OA\Property(property: "password", type: "string", example: "nouveaupass123"),
+                new OA\Property(property: "password_confirmation", type: "string", example: "nouveaupass123"),
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(response: 200, description: "Mot de passe réinitialisé"),
+        new OA\Response(response: 422, description: "Code invalide ou expiré"),
+    ]
+)]
+public function resetPassword(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'email' => 'required|email',
+        'token' => 'required',
+        'password' => 'required|string|min:6|confirmed',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+    }
+
+    $record = DB::table('password_reset_tokens')->where('email', $request->email)->first();
+
+    if (!$record || !Hash::check($request->token, $record->token)) {
+        return response()->json(['success' => false, 'message' => 'Code invalide.'], 422);
+    }
+
+    if (now()->diffInMinutes($record->created_at) > 15) {
+        return response()->json(['success' => false, 'message' => 'Code expiré.'], 422);
+    }
+
+    $user = User::where('email', $request->email)->first();
+    $user->update(['password' => Hash::make($request->password)]);
+
+    DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+    return response()->json(['success' => true, 'message' => 'Mot de passe réinitialisé.']);
 }
 }
