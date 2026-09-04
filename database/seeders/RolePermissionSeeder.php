@@ -1,5 +1,6 @@
 <?php
 
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
@@ -13,9 +14,11 @@ class RolePermissionSeeder extends Seeder
         Permission::firstOrCreate(['name' => 'gerer_espace']);
         Permission::firstOrCreate(['name' => 'voir_positions']);
         Permission::firstOrCreate(['name' => 'ajouter_lieu']);
+        Permission::firstOrCreate(['name' => 'modifier_lieu']);
+        Permission::firstOrCreate(['name' => 'supprimer_lieu']);
 
         $admin = Role::firstOrCreate(['name' => 'admin_famille']);
-        $admin->syncPermissions(['gerer_espace', 'voir_positions', 'ajouter_lieu']);
+        $admin->syncPermissions(['gerer_espace', 'voir_positions', 'ajouter_lieu', 'modifier_lieu', 'supprimer_lieu']);
 
         $membre = Role::firstOrCreate(['name' => 'membre']);
         $membre->syncPermissions(['voir_positions']);

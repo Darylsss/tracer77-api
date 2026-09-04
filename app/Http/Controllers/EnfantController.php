@@ -29,7 +29,7 @@ class EnfantController extends Controller
             new OA\Response(response: 422, description: "Erreur de validation"),
         ]
     )]
-    public function store(Request $request)
+   public function store(Request $request)
 {
     $user = $request->user();
 
@@ -37,11 +37,15 @@ class EnfantController extends Controller
         return response()->json(['success' => false, 'message' => 'Vous n\'appartenez à aucune famille.'], 404);
     }
 
+    if (!$user->can('gerer_espace')) {
+        return response()->json(['success' => false, 'message' => 'Non autorisé. Seul l\'admin peut ajouter un enfant.'], 403);
+    }
+
     $validator = Validator::make($request->all(), [
         'nom' => 'nullable|string|max:255',
         'prenom' => 'required|string|max:255',
         'identifiant_boitier' => 'required|string|unique:enfants,identifiant_boitier',
-        'photo' => 'nullable|image|max:5120', // 5 Mo max
+        'photo' => 'nullable|image|max:5120',
     ]);
 
     if ($validator->fails()) {

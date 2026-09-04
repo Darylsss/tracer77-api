@@ -29,4 +29,8 @@ class Enfant extends Model
     {
         return $this->morphOne(Position::class, 'trackable')->latestOfMany();
     }
+    public function places()
+{
+    return $this->hasMany(Place::class);
+}
 }

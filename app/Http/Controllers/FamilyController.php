@@ -7,6 +7,7 @@ use App\Models\FamilyInvite;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use OpenApi\Attributes as OA;
 use App\Models\Family;
 
@@ -107,38 +108,23 @@ class FamilyController extends Controller
             'expires_at' => now()->addHours(48), // valable 48h
         ]);
 
-        // Envoi de l'email via l'API HTTPS de Brevo (contourne le blocage des ports SMTP de Railway)
-        $response = Http::withHeaders([
-            'api-key' => env('BREVO_API_KEY'),
-            'content-type' => 'application/json',
-            'accept' => 'application/json',
-        ])->post('https://api.brevo.com/v3/smtp/email', [
-            'sender' => [
-                'name' => env('MAIL_FROM_NAME', 'Tracer77'),
-                'email' => env('MAIL_FROM_ADDRESS', 'sossoudaril@gmail.com'),
-            ],
-            'to' => [
-                ['email' => $request->email],
-            ],
-            'subject' => 'Invitation à rejoindre une famille - Tracer77',
-            'textContent' => "Vous êtes invité(e) à rejoindre une famille sur Tracer77 !\n\n"
-                . "1. Téléchargez l'application Tracer77\n"
-                . "2. Créez votre compte (ou connectez-vous si vous en avez déjà un)\n"
-                . "3. Choisissez « Rejoindre une famille »\n"
-                . "4. Collez ce code d'invitation : {$invite->token}\n\n"
-                . "Ce code est valable 48h.",
-        ]);
-
-        if ($response->successful()) {
-            return response()->json(['success' => true, 'message' => 'Invitation envoyée.']);
-        }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Erreur lors de l\'envoi du mail via Brevo.',
-            'details' => $response->json(),
-        ], 500);
+        // Envoi de l'email (on configurera Mailtrap juste après)
+        Mail::raw(
+    "Vous êtes invité(e) à rejoindre une famille sur Tracer77 !\n\n"
+    . "1. Téléchargez l'application Tracer77\n"
+    . "2. Créez votre compte (ou connectez-vous si vous en avez déjà un)\n"
+    . "3. Choisissez « Rejoindre une famille »\n"
+    . "4. Collez ce code d'invitation : {$invite->token}\n\n"
+    . "Ce code est valable 48h.",
+    function ($message) use ($request) {
+        $message->to($request->email)->subject('Invitation à rejoindre une famille - Tracer77');
     }
+);
+
+        return response()->json(['success' => true, 'message' => 'Invitation envoyée.']);
+    
+}
+
 
     #[OA\Post(
         path: "/api/family/accept-invite",

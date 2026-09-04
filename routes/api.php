@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\EnfantController;
+use App\Http\Controllers\PlaceController;
 
 
 
@@ -27,6 +28,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/family/members/{id}', [FamilyController::class, 'removeMember']);
     Route::post('/enfants', [EnfantController::class, 'store']);
     Route::post('/user/toggle-position-sharing', [FamilyController::class, 'togglePositionSharing']);
+    Route::apiResource('places', PlaceController::class)->except(['show']);
+    Route::get('/enfants/{enfant}/places', [PlaceController::class, 'index']);
+    Route::post('/enfants/{enfant}/places', [PlaceController::class, 'store']);
+    Route::put('/places/{place}', [PlaceController::class, 'update']);
+    Route::delete('/places/{place}', [PlaceController::class, 'destroy']);
     
 });
 
