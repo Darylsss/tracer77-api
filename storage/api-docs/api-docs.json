@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://192.168.1.77:8000/",
+            "url": "http://192.168.1.94:8000/",
             "description": "Serveur local de développement"
         }
     ],
@@ -542,6 +542,200 @@
                 ]
             }
         },
+        "/api/enfants/{enfant}/places": {
+            "get": {
+                "summary": "Lister les lieux d'un enfant",
+                "operationId": "4a87ab16d03fad9f0f7a7660406ba999",
+                "parameters": [
+                    {
+                        "name": "enfant",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des lieux"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Ajouter un lieu pour un enfant (admin uniquement)",
+                "operationId": "f3c72318bb687040eeefdc096edd9eae",
+                "parameters": [
+                    {
+                        "name": "enfant",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "type",
+                                    "nom",
+                                    "latitude",
+                                    "longitude"
+                                ],
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "example": "domicile",
+                                        "enum": [
+                                            "domicile",
+                                            "ecole",
+                                            "proche",
+                                            "autre"
+                                        ]
+                                    },
+                                    "nom": {
+                                        "type": "string",
+                                        "example": "Maison familiale"
+                                    },
+                                    "latitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 6.4315
+                                    },
+                                    "longitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 2.3624
+                                    },
+                                    "rayon": {
+                                        "type": "integer",
+                                        "example": 150
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Lieu créé"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/places/{place}": {
+            "put": {
+                "summary": "Modifier un lieu (admin uniquement)",
+                "operationId": "030cd282e8fe183ce1d89863a3dfa0b1",
+                "parameters": [
+                    {
+                        "name": "place",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nom": {
+                                        "type": "string",
+                                        "example": "Chez Mamie"
+                                    },
+                                    "latitude": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "longitude": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "rayon": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Lieu mis à jour"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    },
+                    "404": {
+                        "description": "Lieu introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "summary": "Supprimer un lieu (admin uniquement)",
+                "operationId": "1fb877744865687f26faa5dbf62e9e71",
+                "parameters": [
+                    {
+                        "name": "place",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lieu supprimé"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    },
+                    "404": {
+                        "description": "Lieu introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/positions": {
             "post": {
                 "summary": "Envoyer sa position (membre connecté)",
@@ -663,6 +857,53 @@
         }
     },
     "components": {
+        "schemas": {
+            "Place": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "enfant_id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "created_by": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "domicile",
+                            "ecole",
+                            "proche",
+                            "autre"
+                        ]
+                    },
+                    "nom": {
+                        "type": "string",
+                        "example": "Chez Mamie"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "rayon": {
+                        "type": "integer"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
         "securitySchemes": {
             "sanctum": {
                 "type": "http",
