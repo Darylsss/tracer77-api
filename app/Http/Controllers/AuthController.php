@@ -152,6 +152,7 @@ public function me(Request $request)
     $user = $request->user();
     $data = $user->toArray();
     $data['role'] = $user->getRoleNames()->first();
+    $data['photo'] = $user->photo ? asset('storage/' . $user->photo) : null;
     return response()->json($data);
 }
 
@@ -194,6 +195,75 @@ public function updateName(Request $request)
         'success' => true,
         'message' => 'Nom mis à jour.',
         'user' => $request->user(),
+    ]);
+}
+
+// Modifier le téléphone
+#[OA\Put(
+    path: "/api/user/update-phone",
+    summary: "Modifier le numéro de téléphone",
+    security: [["sanctum" => []]],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ["telephone"],
+            properties: [
+                new OA\Property(property: "telephone", type: "string", example: "+22997000000"),
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(response: 200, description: "Téléphone mis à jour"),
+        new OA\Response(response: 422, description: "Erreur de validation"),
+    ]
+)]
+public function updatePhone(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'telephone' => 'required|string|max:20',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    $request->user()->update(['telephone' => $request->telephone]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Téléphone mis à jour.',
+        'user' => $request->user(),
+    ]);
+}
+
+// Modifier la photo de profil
+#[OA\Post(
+    path: "/api/user/update-photo",
+    summary: "Modifier la photo de profil",
+    security: [["sanctum" => []]],
+    responses: [
+        new OA\Response(response: 200, description: "Photo mise à jour"),
+        new OA\Response(response: 422, description: "Erreur de validation"),
+    ]
+)]
+public function updatePhoto(Request $request)
+{
+    $request->validate([
+        'photo' => 'required|image|max:4096',
+    ]);
+
+    $user = $request->user();
+
+    $path = $request->file('photo')->store('users', 'public');
+    $user->update(['photo' => $path]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Photo mise à jour.',
+        'photo' => asset('storage/' . $path),
     ]);
 }
 
