@@ -150,8 +150,10 @@ class AuthController extends Controller
 public function me(Request $request)
 {
     $user = $request->user();
+    $user->loadMissing('family');
     $data = $user->toArray();
     $data['role'] = $user->getRoleNames()->first();
+    $data['family_nom'] = $user->family?->nom;
     return response()->json($data);
 }
 

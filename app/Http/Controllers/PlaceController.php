@@ -50,6 +50,8 @@ class PlaceController extends Controller
                     new OA\Property(property: "latitude", type: "number", format: "float", example: 6.4315),
                     new OA\Property(property: "longitude", type: "number", format: "float", example: 2.3624),
                     new OA\Property(property: "rayon", type: "integer", example: 150),
+                    new OA\Property(property: "alerte_sortie", type: "boolean", example: false, description: "Déclenche une alerte si le traceur quitte ce lieu"),
+                    new OA\Property(property: "delai_grace_minutes", type: "integer", example: 15, description: "Délai avant l'alerte, pour absorber les trajets normaux"),
                 ]
             )
         ),
@@ -69,6 +71,8 @@ class PlaceController extends Controller
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
             'rayon' => 'nullable|integer|min:10|max:5000',
+            'alerte_sortie' => 'sometimes|boolean',
+            'delai_grace_minutes' => 'required_if:alerte_sortie,true|nullable|integer|min:1|max:120',
         ]);
 
         if ($validator->fails()) {
@@ -98,6 +102,8 @@ class PlaceController extends Controller
                     new OA\Property(property: "latitude", type: "number", format: "float"),
                     new OA\Property(property: "longitude", type: "number", format: "float"),
                     new OA\Property(property: "rayon", type: "integer"),
+                    new OA\Property(property: "alerte_sortie", type: "boolean"),
+                    new OA\Property(property: "delai_grace_minutes", type: "integer"),
                 ]
             )
         ),
@@ -116,6 +122,8 @@ class PlaceController extends Controller
             'latitude' => 'sometimes|numeric|between:-90,90',
             'longitude' => 'sometimes|numeric|between:-180,180',
             'rayon' => 'sometimes|integer|min:10|max:5000',
+            'alerte_sortie' => 'sometimes|boolean',
+            'delai_grace_minutes' => 'required_if:alerte_sortie,true|nullable|integer|min:1|max:120',
         ]);
 
         if ($validator->fails()) {

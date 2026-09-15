@@ -33,6 +33,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/enfants/{enfant}/places', [PlaceController::class, 'store']);
     Route::put('/places/{place}', [PlaceController::class, 'update']);
     Route::delete('/places/{place}', [PlaceController::class, 'destroy']);
+
+    Route::put('enfants/{enfant}', [EnfantController::class, 'update']);
+    Route::delete('enfants/{enfant}', [EnfantController::class, 'destroy']);
     
 });
 

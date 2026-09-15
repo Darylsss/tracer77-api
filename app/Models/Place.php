@@ -10,12 +10,17 @@ class Place extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['enfant_id', 'created_by', 'type', 'nom', 'latitude', 'longitude', 'rayon'];
+    protected $fillable = [
+        'enfant_id', 'created_by', 'type', 'nom', 'latitude', 'longitude', 'rayon',
+        'alerte_sortie', 'delai_grace_minutes',
+    ];
 
     protected $casts = [
         'latitude' => 'float',
         'longitude' => 'float',
         'rayon' => 'integer',
+        'alerte_sortie' => 'boolean',
+        'delai_grace_minutes' => 'integer',
     ];
 
     public function enfant()

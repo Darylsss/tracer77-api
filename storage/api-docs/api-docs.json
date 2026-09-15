@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://192.168.1.94:8000/",
+            "url": "http://192.168.100.7:8000/",
             "description": "Serveur local de développement"
         }
     ],
@@ -361,6 +361,71 @@
                 ]
             }
         },
+        "/api/enfants/{enfant}": {
+            "put": {
+                "summary": "Modifier un enfant (prénom / photo) — admin uniquement",
+                "operationId": "ffd8e1547a32e2729840536b52cc5ea4",
+                "parameters": [
+                    {
+                        "name": "enfant",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Enfant mis à jour"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    },
+                    "404": {
+                        "description": "Enfant introuvable"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "summary": "Retirer un enfant suivi — admin uniquement",
+                "operationId": "322d8e2e21dcc03a6615ea93c19b2ec9",
+                "parameters": [
+                    {
+                        "name": "enfant",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Enfant retiré"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    },
+                    "404": {
+                        "description": "Enfant introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/family/create": {
             "post": {
                 "summary": "Créer un espace famille",
@@ -622,6 +687,16 @@
                                     "rayon": {
                                         "type": "integer",
                                         "example": 150
+                                    },
+                                    "alerte_sortie": {
+                                        "description": "Déclenche une alerte si le traceur quitte ce lieu",
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "delai_grace_minutes": {
+                                        "description": "Délai avant l'alerte, pour absorber les trajets normaux",
+                                        "type": "integer",
+                                        "example": 15
                                     }
                                 },
                                 "type": "object"
@@ -680,6 +755,12 @@
                                         "format": "float"
                                     },
                                     "rayon": {
+                                        "type": "integer"
+                                    },
+                                    "alerte_sortie": {
+                                        "type": "boolean"
+                                    },
+                                    "delai_grace_minutes": {
                                         "type": "integer"
                                     }
                                 },

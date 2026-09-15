@@ -6,7 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Enfant extends Model
 {
-    protected $fillable = ['user_id', 'family_id', 'nom', 'prenom', 'photo', 'identifiant_boitier'];
+    protected $fillable = [
+        'user_id', 'family_id', 'nom', 'prenom', 'photo', 'identifiant_boitier',
+        'zone_actuelle_id', 'hors_zone_depuis', 'delai_grace_courant', 'alerte_sortie_envoyee_a',
+    ];
+
+    protected $casts = [
+        'hors_zone_depuis' => 'datetime',
+        'alerte_sortie_envoyee_a' => 'datetime',
+    ];
 
     public function family()
     {
@@ -33,4 +41,10 @@ class Enfant extends Model
 {
     return $this->hasMany(Place::class);
 }
+
+    // Le dernier lieu (zone de sécurité) où l'enfant a été détecté
+    public function zoneActuelle()
+    {
+        return $this->belongsTo(Place::class, 'zone_actuelle_id');
+    }
 }
