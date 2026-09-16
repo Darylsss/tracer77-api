@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Alerte;
 use App\Models\Position;
 use App\Models\Enfant;
 use Illuminate\Http\Request;
@@ -111,6 +112,15 @@ class PositionController extends Controller
             'batterie' => $request->batterie ?? 0,
             'sos' => $request->sos ?? 0,
         ]);
+
+                if (($request->sos ?? 0) == 1) {
+            Alerte::create([
+                'family_id' => $enfant->family_id,
+                'enfant_id' => $enfant->id,
+                'type' => 'sos',
+                'message' => ($enfant->prenom ?: 'Un enfant') . ' a déclenché une alerte SOS.',
+            ]);
+        }
 
         return response()->json(['success' => true, 'position' => $position], 201);
     }

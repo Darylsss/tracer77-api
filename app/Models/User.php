@@ -19,6 +19,8 @@ class User extends Authenticatable
         'password',
         'family_id',
         'partage_position',
+        'photo',
+        'telephone',
     ];
 
     protected $hidden = [
@@ -26,35 +28,32 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected $casts = [
-    'partage_position' => 'boolean',
-];
-
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
+            'partage_position'  => 'boolean',
         ];
     }
 
     public function family()
-{
-    return $this->belongsTo(Family::class);
-} 
+    {
+        return $this->belongsTo(Family::class);
+    }
 
-public function positions()
-{
-    return $this->morphMany(Position::class, 'trackable');
-}
+    public function positions()
+    {
+        return $this->morphMany(Position::class, 'trackable');
+    }
 
-public function lastPosition()
-{
-    return $this->morphOne(Position::class, 'trackable')->latestOfMany();
-}
+    public function lastPosition()
+    {
+        return $this->morphOne(Position::class, 'trackable')->latestOfMany();
+    }
 
-public function places()
-{
-    return $this->hasMany(Place::class);
-}
+    public function places()
+    {
+        return $this->hasMany(Place::class);
+    }
 }
