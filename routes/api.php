@@ -40,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('enfants/{enfant}', [EnfantController::class, 'update']);
     Route::delete('enfants/{enfant}', [EnfantController::class, 'destroy']);
     Route::get('/alerts', [AlertController::class, 'index']);
+    Route::get('/enfants/{enfant}/historique', [PositionController::class, 'historique']);
 });
 
 // Routes positions boîtier

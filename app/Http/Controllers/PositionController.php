@@ -124,4 +124,50 @@ class PositionController extends Controller
 
         return response()->json(['success' => true, 'position' => $position], 201);
     }
-}
+
+    #[OA\Get(
+        path: "/api/enfants/{enfant}/historique",
+        summary: "Historique des positions d'un enfant pour une période",
+        security: [["sanctum" => []]],
+        parameters: [
+            new OA\Parameter(name: "enfant", in: "path", required: true, schema: new OA\Schema(type: "integer")),
+            new OA\Parameter(
+                name: "periode",
+                in: "query",
+                required: false,
+                schema: new OA\Schema(type: "string", enum: ["aujourdhui", "hier", "avant_hier", "semaine"])
+            ),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Positions de la période"),
+            new OA\Response(response: 403, description: "Non autorisé"),
+        ]
+    )]
+    public function historique(Request $request, Enfant $enfant)
+    {
+        $user = $request->user();
+        if ($enfant->family_id !== $user->family_id) {
+            return response()->json(['success' => false, 'message' => 'Non autorisé.'], 403);
+        }
+
+        $periode = $request->query('periode', 'aujourdhui');
+
+        [$debut, $fin] = match ($periode) {
+            'hier' => [now()->subDay()->startOfDay(), now()->subDay()->endOfDay()],
+            'avant_hier' => [now()->subDays(2)->startOfDay(), now()->subDays(2)->endOfDay()],
+            'semaine' => [now()->startOfWeek(), now()->endOfWeek()],
+            default => [now()->startOfDay(), now()->endOfDay()],
+        };
+
+        $positions = $enfant->positions()
+            ->whereBetween('created_at', [$debut, $fin])
+            ->orderBy('created_at')
+            ->get(['id', 'lat', 'lng', 'vitesse', 'created_at']);
+
+        return response()->json([
+            'success' => true,
+            'periode' => $periode,
+            'positions' => $positions,
+        ]);
+    }
+    }

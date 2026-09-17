@@ -12,6 +12,22 @@
         }
     ],
     "paths": {
+        "/api/alerts": {
+            "get": {
+                "summary": "Lister les alertes de la famille de l'utilisateur connecté",
+                "operationId": "59e7c2fbfd19b3653c6d0f4836555a58",
+                "responses": {
+                    "200": {
+                        "description": "Liste retournée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/register": {
             "post": {
                 "summary": "Inscription d'un nouvel utilisateur",
@@ -171,6 +187,63 @@
                 ]
             }
         },
+        "/api/user/update-phone": {
+            "put": {
+                "summary": "Modifier le numéro de téléphone",
+                "operationId": "cb05a0b87ad687291f3003ef641708b4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "telephone"
+                                ],
+                                "properties": {
+                                    "telephone": {
+                                        "type": "string",
+                                        "example": "+22997000000"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Téléphone mis à jour"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/user/update-photo": {
+            "post": {
+                "summary": "Modifier la photo de profil",
+                "operationId": "f1bb7b814c939749a61261d26f4d1fc6",
+                "responses": {
+                    "200": {
+                        "description": "Photo mise à jour"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/user/update-password": {
             "put": {
                 "summary": "Modifier le mot de passe",
@@ -309,6 +382,30 @@
                     },
                     "422": {
                         "description": "Code invalide ou expiré"
+                    }
+                }
+            }
+        },
+        "/api/devices/phone": {
+            "get": {
+                "summary": "Récupérer le numéro du parent responsable pour un boîtier donné",
+                "operationId": "48189c471c7723e1700b86fa01b27f89",
+                "parameters": [
+                    {
+                        "name": "identifiant_boitier",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Numéro retourné"
+                    },
+                    "404": {
+                        "description": "Boîtier ou numéro introuvable"
                     }
                 }
             }
@@ -934,6 +1031,49 @@
                         "description": "Boîtier inconnu"
                     }
                 }
+            }
+        },
+        "/api/enfants/{enfant}/historique": {
+            "get": {
+                "summary": "Historique des positions d'un enfant pour une période",
+                "operationId": "71f4895dc762dbd35fd7b1d7b477f2b3",
+                "parameters": [
+                    {
+                        "name": "enfant",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "periode",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "aujourdhui",
+                                "hier",
+                                "avant_hier",
+                                "semaine"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Positions de la période"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         }
     },
