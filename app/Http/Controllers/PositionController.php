@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Alerte;
 use App\Models\Position;
 use App\Models\Enfant;
+use App\Models\Alerte;
+use App\Models\ZoneEtat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
@@ -113,7 +114,7 @@ class PositionController extends Controller
             'sos' => $request->sos ?? 0,
         ]);
 
-                if (($request->sos ?? 0) == 1) {
+        if (($request->sos ?? 0) == 1) {
             Alerte::create([
                 'family_id' => $enfant->family_id,
                 'enfant_id' => $enfant->id,
@@ -122,52 +123,86 @@ class PositionController extends Controller
             ]);
         }
 
+        $this->verifierZones($enfant, $position);
+
         return response()->json(['success' => true, 'position' => $position], 201);
     }
 
-    #[OA\Get(
-        path: "/api/enfants/{enfant}/historique",
-        summary: "Historique des positions d'un enfant pour une période",
-        security: [["sanctum" => []]],
-        parameters: [
-            new OA\Parameter(name: "enfant", in: "path", required: true, schema: new OA\Schema(type: "integer")),
-            new OA\Parameter(
-                name: "periode",
-                in: "query",
-                required: false,
-                schema: new OA\Schema(type: "string", enum: ["aujourdhui", "hier", "avant_hier", "semaine"])
-            ),
-        ],
-        responses: [
-            new OA\Response(response: 200, description: "Positions de la période"),
-            new OA\Response(response: 403, description: "Non autorisé"),
-        ]
-    )]
-    public function historique(Request $request, Enfant $enfant)
+    /**
+     * Vérifie chaque zone à alerte pour cet enfant, avec délai de grâce.
+     * L'état (hors_zone_depuis / alerte_envoyee) est mémorisé par couple
+     * enfant/zone dans la table zone_etats.
+     */
+    private function verifierZones(Enfant $enfant, Position $positionActuelle): void
     {
-        $user = $request->user();
-        if ($enfant->family_id !== $user->family_id) {
-            return response()->json(['success' => false, 'message' => 'Non autorisé.'], 403);
+        $zones = $enfant->places()->where('alerte_sortie', true)->get();
+
+        foreach ($zones as $zone) {
+            $rayon = $zone->rayon ?? 150;
+            $delaiGraceMinutes = $zone->delai_grace_minutes ?? 15;
+
+            $estDedans = $this->estDansLeRayon(
+                $positionActuelle->lat,
+                $positionActuelle->lng,
+                $zone->latitude,
+                $zone->longitude,
+                $rayon
+            );
+
+            $etat = ZoneEtat::firstOrCreate(
+                ['enfant_id' => $enfant->id, 'place_id' => $zone->id],
+                ['hors_zone_depuis' => null, 'alerte_envoyee' => false]
+            );
+
+            if ($estDedans) {
+                // Retour dans la zone : si une alerte de sortie avait été envoyée, on notifie le retour.
+                if ($etat->alerte_envoyee) {
+                    Alerte::create([
+                        'family_id' => $enfant->family_id,
+                        'enfant_id' => $enfant->id,
+                        'type' => 'entree_zone',
+                        'message' => ($enfant->prenom ?: 'Un enfant') . " est de retour dans la zone « {$zone->nom} ».",
+                    ]);
+                }
+                $etat->update(['hors_zone_depuis' => null, 'alerte_envoyee' => false]);
+                continue;
+            }
+
+            // L'enfant est hors zone.
+            if ($etat->hors_zone_depuis === null) {
+                // Première position détectée hors zone : on démarre le délai de grâce, sans alerter tout de suite.
+                $etat->update(['hors_zone_depuis' => now()]);
+                continue;
+            }
+
+            if (!$etat->alerte_envoyee && now()->diffInMinutes($etat->hors_zone_depuis) >= $delaiGraceMinutes) {
+                Alerte::create([
+                    'family_id' => $enfant->family_id,
+                    'enfant_id' => $enfant->id,
+                    'type' => 'sortie_zone',
+                    'message' => ($enfant->prenom ?: 'Un enfant') . " est sorti(e) de la zone « {$zone->nom} » depuis plus de {$delaiGraceMinutes} minutes.",
+                ]);
+                $etat->update(['alerte_envoyee' => true]);
+            }
         }
-
-        $periode = $request->query('periode', 'aujourdhui');
-
-        [$debut, $fin] = match ($periode) {
-            'hier' => [now()->subDay()->startOfDay(), now()->subDay()->endOfDay()],
-            'avant_hier' => [now()->subDays(2)->startOfDay(), now()->subDays(2)->endOfDay()],
-            'semaine' => [now()->startOfWeek(), now()->endOfWeek()],
-            default => [now()->startOfDay(), now()->endOfDay()],
-        };
-
-        $positions = $enfant->positions()
-            ->whereBetween('created_at', [$debut, $fin])
-            ->orderBy('created_at')
-            ->get(['id', 'lat', 'lng', 'vitesse', 'created_at']);
-
-        return response()->json([
-            'success' => true,
-            'periode' => $periode,
-            'positions' => $positions,
-        ]);
     }
+
+    /**
+     * Calcule si un point est à l'intérieur d'un rayon donné (formule de Haversine).
+     */
+    private function estDansLeRayon(float $lat1, float $lng1, float $lat2, float $lng2, float $rayonMetres): bool
+    {
+        $rayonTerre = 6371000; // mètres
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+
+        $a = sin($dLat / 2) ** 2
+            + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        $distance = $rayonTerre * $c;
+
+        return $distance <= $rayonMetres;
     }
+}
