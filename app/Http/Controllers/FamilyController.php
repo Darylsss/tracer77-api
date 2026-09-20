@@ -210,6 +210,7 @@ class FamilyController extends Controller
                 'id' => $u->id,
                 'nom' => $u->nom,
                 'role' => $u->getRoleNames()->first(),
+                'photo' => $u->photo ? asset('storage/' . $u->photo) : null,
                 'partage_position' => $u->partage_position,
                 'position' => $u->partage_position ? $u->lastPosition : null,
             ];
